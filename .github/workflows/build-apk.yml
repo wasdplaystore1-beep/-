@@ -1,20 +1,27 @@
-name: Build and Sign Android APK
+name: Build and Release Android APK
 
 on:
   push:
     branches: [ "main", "master" ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Build & Sign APK
+    name: Build & Release APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -58,8 +65,46 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
 
+      - name: Extract Commit Message & Prepare Release Notes
+        id: release_info
+        run: |
+          COMMIT_TITLE=$(git log -1 --pretty=format:"%s")
+          COMMIT_BODY=$(git log -1 --pretty=format:"%b")
+
+          echo "## 📦 تفاصيل التحديث (Commit Details)" > release_notes.md
+          echo "" >> release_notes.md
+          echo "**العنوان:** $COMMIT_TITLE" >> release_notes.md
+          if [ -n "$COMMIT_BODY" ]; then
+            echo "" >> release_notes.md
+            echo "$COMMIT_BODY" >> release_notes.md
+          fi
+          echo "" >> release_notes.md
+          echo "---" >> release_notes.md
+          echo "🚀 **رقم البناء:** #${{ github.run_number }}" >> release_notes.md
+          echo "📅 **تاريخ الإصدار:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> release_notes.md
+
+          TAG_NAME="v1.0.${{ github.run_number }}"
+          RELEASE_NAME="Release $TAG_NAME - $COMMIT_TITLE"
+
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Publish GitHub Release
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_info.outputs.tag_name }}
+          name: ${{ steps.release_info.outputs.release_name }}
+          body_path: release_notes.md
+          files: |
+            app/build/outputs/apk/debug/app-debug.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
