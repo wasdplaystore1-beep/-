@@ -207,193 +207,8 @@ object InitialDataSeeder {
         storeCatDao.insertCategory(s3Cat1)
         storeCatDao.insertCategory(s3Cat2)
 
-        // 5. Seed Products (Cross-store searchable products)
-        val products = listOf(
-            // Store 1: Watches & Electronics
-            Product(
-                id = 1L,
-                storeId = 1L,
-                storeCategoryId = 1L,
-                platformCategoryKey = "watches_accessories",
-                title = "ساعة كاسيو فينتاج كلاسيك ذهبية ديجيتال أصلية (Casio A168WG)",
-                slug = "casio-vintage-gold-a168",
-                description = "ساعة كاسيو الكلاسيكية باللون الذهبي الأيقوني المقاوم للصدأ، شاشة إلكترونية بإضاءة إلكترولومينيسنت، مقاومة للماء، منبه يومي ومؤقت دقيق. ضمان الوكيل سنتين.",
-                price = 185.0,
-                originalPrice = 240.0,
-                imageUrl = "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 1420
-            ),
-            Product(
-                id = 2L,
-                storeId = 1L,
-                storeCategoryId = 1L,
-                platformCategoryKey = "watches_accessories",
-                title = "ساعة كاسيو جي شوك عسكرية مضادة للصدمات (Casio G-Shock GA-2100)",
-                slug = "casio-g-shock-ga2100-black",
-                description = "ساعة كاسيو جي شوك الأصلية بهيكل كربوني فائق المتانة، مقاومة للماء حتى عمق 200 متر، تصميم ثماني أضلاع أسود مائل للأناقة والصلابة.",
-                price = 450.0,
-                originalPrice = 520.0,
-                imageUrl = "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 980
-            ),
-            Product(
-                id = 3L,
-                storeId = 1L,
-                storeCategoryId = 1L,
-                platformCategoryKey = "watches_accessories",
-                title = "ساعة كاسيو إديفيس رياضية كرونوغراف ستانلس ستيل (Casio Edifice)",
-                slug = "casio-edifice-chronograph-steel",
-                description = "ساعة كاسيو إديفيس الفاخرة للرجال مع ميناء أزرق داكن وعقارب كرونوغراف دقيقة، زجاج كريستال ياقوتي وسوار من الفولاذ المقاوم للصدأ.",
-                price = 380.0,
-                originalPrice = 450.0,
-                imageUrl = "https://images.unsplash.com/photo-1533139502658-0198f920d8e8?w=600&auto=format&fit=crop",
-                isFeatured = false,
-                inStock = true,
-                viewsCount = 640
-            ),
-            Product(
-                id = 4L,
-                storeId = 1L,
-                storeCategoryId = 2L,
-                platformCategoryKey = "phones_electronics",
-                title = "سماعات آبل ايربودز برو الجيل الثاني بمنفذ تايب سي (Apple AirPods Pro 2)",
-                slug = "apple-airpods-pro-2-type-c",
-                description = "سماعات لاسلكية بإلغاء الضوضاء النشط المحسّن بمقدار الضعف، ميزة الصوت المكاني المخصص وعلبة MagSafe المتطورة.",
-                price = 849.0,
-                originalPrice = 999.0,
-                imageUrl = "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 2100
-            ),
-            // Store 2: Fashion
-            Product(
-                id = 5L,
-                storeId = 2L,
-                storeCategoryId = 4L,
-                platformCategoryKey = "fashion_clothing",
-                title = "ثوب الدفة الفاخر قطن ياباني سلك مريح وأنيق",
-                slug = "thobe-daffah-japanese-cotton",
-                description = "ثوب سعودي أصيل بخياطة دقيقة وياقة ملكية راقية، قماش بارد ومقاوم للتجعد ومثالي لجميع المناسبات والاجتماعات.",
-                price = 220.0,
-                originalPrice = 280.0,
-                imageUrl = "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 850
-            ),
-            Product(
-                id = 6L,
-                storeId = 2L,
-                storeCategoryId = 5L,
-                platformCategoryKey = "fashion_clothing",
-                title = "عباية كريب ملكي سوداء بقصة كلوش وتطريز أكمام ناعم",
-                slug = "abaya-crepe-black-embroidered",
-                description = "عباية صيفية انسيابية من خامة الكريب الملكي الكوري الفاخر مع طرحة مجانية متناسقة بقماش ليزر بارد.",
-                price = 310.0,
-                originalPrice = 390.0,
-                imageUrl = "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop",
-                isFeatured = false,
-                inStock = true,
-                viewsCount = 670
-            ),
-            // Store 3: Coffee
-            Product(
-                id = 7L,
-                storeId = 3L,
-                storeCategoryId = 6L,
-                platformCategoryKey = "home_living",
-                title = "ماكينة قهوة اسبريسو بريفيل باريستا برو مع طاحونة مدمجة",
-                slug = "breville-barista-pro-espresso",
-                description = "أفضل ماكينة قهوة منزلية بنظام تسخين ThermoJet في 3 ثوانٍ فقط، شاشة LCD تفاعلية ومطحنة حبوب مدمجة مع 30 درجة طحن.",
-                price = 3250.0,
-                originalPrice = 3699.0,
-                imageUrl = "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 1890
-            ),
-            Product(
-                id = 8L,
-                storeId = 3L,
-                storeCategoryId = 7L,
-                platformCategoryKey = "food_gourmet",
-                title = "محصول قهوة مختصة إثيوبيا قوجي مجففة 250 جرام",
-                slug = "ethiopian-coffee-guji-250g",
-                description = "إيحاءات التوت الأسود، الخوخ، وحلاوة العسل مع قوام حريري ممتع، معالجة مجففة ومحمصة طازجة لمشروبات الفلتر والاسبريسو.",
-                price = 58.0,
-                originalPrice = 70.0,
-                imageUrl = "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&auto=format&fit=crop",
-                isFeatured = false,
-                inStock = true,
-                viewsCount = 520
-            ),
-            // Store 4: Sneakers
-            Product(
-                id = 9L,
-                storeId = 4L,
-                platformCategoryKey = "shoes_bags",
-                title = "حذاء نايكي أير زوم بيجاسوس الرياضي للجري والتمارين اليومية",
-                slug = "nike-air-zoom-pegasus-shoes",
-                description = "حذاء رياضي خفيف الوزن بوسائد هوائية مزدوجة Air Zoom واستجابة فورية تقلل الإجهاد وتمنحك ثباتاً رائعاً.",
-                price = 490.0,
-                originalPrice = 599.0,
-                imageUrl = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 1350
-            ),
-            // Store 5: Gaming
-            Product(
-                id = 10L,
-                storeId = 5L,
-                platformCategoryKey = "gaming_entertainment",
-                title = "جهاز بلايستيشن 5 سليم إصدار الأقراص مع يد تحكم دوال سينس",
-                slug = "playstation-5-slim-disc-edition",
-                description = "إصدار النحيف الجديد من PS5 بسعة تخزين 1 تيرابايت SSD فائق السرعة، دعم دقة 4K ومعدل تحديث يصل إلى 120 إطار بالثانية.",
-                price = 2149.0,
-                originalPrice = 2399.0,
-                imageUrl = "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 3100
-            ),
-            Product(
-                id = 11L,
-                storeId = 5L,
-                platformCategoryKey = "computers_tech",
-                title = "لوحة مفاتيح ميكانيكية قيمنق RGB سويتش أحمر صامت سريع",
-                slug = "mechanical-keyboard-rgb-gaming",
-                description = "كيبورد احترافي بأزرار ميكانيكية متجاوبة وإضاءة خلفية قابلة للتخصيص بأكثر من 16 مليون لون.",
-                price = 299.0,
-                originalPrice = 360.0,
-                imageUrl = "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop",
-                isFeatured = false,
-                inStock = true,
-                viewsCount = 430
-            ),
-            // Store 6: Beauty
-            Product(
-                id = 12L,
-                storeId = 6L,
-                platformCategoryKey = "beauty_care",
-                title = "دهن عود براشين ملكي قديم فاخر نخب أول معتق",
-                slug = "oud-prachin-royal-aged",
-                description = "دهن عود صافي وطبيعي 100% بنكهة سويتية بخورية هادئة وفوحان يدوم لأكثر من 24 ساعة على الثياب.",
-                price = 320.0,
-                originalPrice = 420.0,
-                imageUrl = "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=600&auto=format&fit=crop",
-                isFeatured = true,
-                inStock = true,
-                viewsCount = 920
-            )
-        )
-
-        products.forEach { productDao.insertProduct(it) }
+        // 5. Seed Products (Mock demo products removed - Merchants can add their own products)
+        // No demo products seeded; store owners add real products via the Merchant Dashboard.
 
         // 6. Seed Reviews
         val reviews = listOf(
@@ -404,5 +219,56 @@ object InitialDataSeeder {
             StoreReview(storeId = 3L, userName = "فيصل الدوسري", rating = 5, comment = "ماكينة الاسبريسو وصلت بسلام، والمحصول الإثيوبي نكهته استثنائية!")
         )
         reviews.forEach { reviewDao.insertReview(it) }
+
+        // 7. Seed Initial Animated Banner Ads
+        val bannerDao = database.bannerAdDao()
+        val initialBanners = listOf(
+            com.example.data.model.BannerAd(
+                id = 1L,
+                title = "مهرجان إطلاق منصة سوقنا الإلكترونية 🚀",
+                subtitle = "تسوّق مباشرة من أبرز المتاجر الموثقة في المملكة مع تواصل فوري عبر واتساب",
+                badgeText = "عرض الافتتاح 🔥",
+                imageUrl = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&auto=format&fit=crop",
+                actionText = "استكشف المتاجر",
+                targetType = "SEARCH",
+                targetPayload = "",
+                gradientStartHex = "#059669",
+                gradientEndHex = "#065F46",
+                isActive = true,
+                isAnimated = true,
+                displayOrder = 1
+            ),
+            com.example.data.model.BannerAd(
+                id = 2L,
+                title = "متجر المملكة للساعات الكلاسيكية ⌚",
+                subtitle = "أرقى موديلات الساعات اليابانية والسويسرية الأصلية بأسعار منافسة وضمان شامل",
+                badgeText = "متجر موثق ⭐",
+                imageUrl = "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&auto=format&fit=crop",
+                actionText = "زيارة المتجر",
+                targetType = "STORE",
+                targetPayload = "1",
+                gradientStartHex = "#1E40AF",
+                gradientEndHex = "#1E1B4B",
+                isActive = true,
+                isAnimated = true,
+                displayOrder = 2
+            ),
+            com.example.data.model.BannerAd(
+                id = 3L,
+                title = "افتح متجرك الإلكتروني مجاناً اليوم 🏪",
+                subtitle = "انضم لمئات التجار وابدأ في عرض منتجاتك واستقبال طلبات الزبائن مباشرة",
+                badgeText = "فرصة للتجار 🎁",
+                imageUrl = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&auto=format&fit=crop",
+                actionText = "أنشئ متجرك",
+                targetType = "SPECIAL_OFFER",
+                targetPayload = "create_store",
+                gradientStartHex = "#D97706",
+                gradientEndHex = "#92400E",
+                isActive = true,
+                isAnimated = true,
+                displayOrder = 3
+            )
+        )
+        initialBanners.forEach { bannerDao.insertBanner(it) }
     }
 }

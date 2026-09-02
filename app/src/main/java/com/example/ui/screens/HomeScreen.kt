@@ -38,6 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +52,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.components.AddEditBannerAdDialog
+import com.example.ui.components.AnimatedAdCarousel
 import com.example.ui.components.CategoryChip
 import com.example.ui.components.InteractiveMapCanvas
 import com.example.ui.components.ProductGridCard
@@ -75,6 +80,9 @@ fun HomeScreen(
     val allActiveStores by viewModel.allActiveStores.collectAsStateWithLifecycle()
     val newStores by viewModel.newStores.collectAsStateWithLifecycle()
     val allProductsWithStore by viewModel.allProductsWithStore.collectAsStateWithLifecycle()
+    val activeBanners by viewModel.activeBanners.collectAsStateWithLifecycle()
+
+    var showAddBannerDialog by remember { mutableStateOf(false) }
 
     val featuredProducts = allProductsWithStore.filter { it.product.isFeatured }
     val latestProducts = allProductsWithStore.sortedByDescending { it.product.createdAt }
@@ -211,7 +219,16 @@ fun HomeScreen(
             }
         }
 
-        // 2. Banner: Free Store Registration & Unified Search
+        // 2. Animated Ads Carousel & Announcements
+        item {
+            AnimatedAdCarousel(
+                banners = activeBanners,
+                onBannerClick = { viewModel.handleBannerClick(it) },
+                onAddNewAdClick = { showAddBannerDialog = true }
+            )
+        }
+
+        // 3. Banner: Free Store Registration & Unified Search
         item {
             Card(
                 modifier = Modifier
@@ -359,48 +376,50 @@ fun HomeScreen(
             }
         }
 
-        // 5. Featured Products Spotlight
-        item {
-            Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "المنتجات المميزة 💎",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    TextButton(onClick = {
-                        viewModel.setSearchTab(SearchTab.PRODUCTS)
-                        viewModel.navigateTo(ScreenNav.Search)
-                    }) {
+        // 5. Featured Products Spotlight (Shown when products exist)
+        if (featuredProducts.isNotEmpty()) {
+            item {
+                Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            text = "تصفح المنتجات",
-                            fontSize = 13.sp,
+                            text = "المنتجات المميزة 💎",
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = EmeraldPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(featuredProducts) { item ->
-                        Box(modifier = Modifier.width(180.dp)) {
-                            ProductGridCard(
-                                productWithStore = item,
-                                onProductClick = { viewModel.selectProduct(item.product.id) },
-                                onStoreClick = { viewModel.selectStore(item.store.id) }
+                        TextButton(onClick = {
+                            viewModel.setSearchTab(SearchTab.PRODUCTS)
+                            viewModel.navigateTo(ScreenNav.Search)
+                        }) {
+                            Text(
+                                text = "تصفح المنتجات",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = EmeraldPrimary
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(featuredProducts) { item ->
+                            Box(modifier = Modifier.width(180.dp)) {
+                                ProductGridCard(
+                                    productWithStore = item,
+                                    onProductClick = { viewModel.selectProduct(item.product.id) },
+                                    onStoreClick = { viewModel.selectStore(item.store.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -480,43 +499,45 @@ fun HomeScreen(
             }
         }
 
-        // 7. Latest Products Feed
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "أحدث المنتجات في المنصة 🛍️",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-
-        val chunkedProducts = latestProducts.chunked(2)
-        items(chunkedProducts) { rowItems ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                for (item in rowItems) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        ProductGridCard(
-                            productWithStore = item,
-                            onProductClick = { viewModel.selectProduct(item.product.id) },
-                            onStoreClick = { viewModel.selectStore(item.store.id) }
-                        )
-                    }
+        // 7. Latest Products Feed (Shown when products exist)
+        if (latestProducts.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "أحدث المنتجات في المنصة 🛍️",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
-                if (rowItems.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
+            }
+
+            val chunkedProducts = latestProducts.chunked(2)
+            items(chunkedProducts) { rowItems ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    for (item in rowItems) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            ProductGridCard(
+                                productWithStore = item,
+                                onProductClick = { viewModel.selectProduct(item.product.id) },
+                                onStoreClick = { viewModel.selectStore(item.store.id) }
+                            )
+                        }
+                    }
+                    if (rowItems.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
@@ -562,5 +583,28 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             com.example.ui.components.WebFooter(viewModel = viewModel)
         }
+    }
+
+    if (showAddBannerDialog) {
+        AddEditBannerAdDialog(
+            availableStores = allActiveStores,
+            availableCategories = categories,
+            onDismiss = { showAddBannerDialog = false },
+            onSave = { title, subtitle, badgeText, imageUrl, actionText, targetType, targetPayload, gradStart, gradEnd, isAnim ->
+                viewModel.createBannerAd(
+                    title = title,
+                    subtitle = subtitle,
+                    badgeText = badgeText,
+                    imageUrl = imageUrl,
+                    actionText = actionText,
+                    targetType = targetType,
+                    targetPayload = targetPayload,
+                    gradientStartHex = gradStart,
+                    gradientEndHex = gradEnd,
+                    isAnimated = isAnim
+                )
+                showAddBannerDialog = false
+            }
+        )
     }
 }

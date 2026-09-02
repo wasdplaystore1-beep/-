@@ -182,3 +182,27 @@ interface UserProfileDao {
     @Update
     suspend fun updateUser(user: UserProfile)
 }
+
+@Dao
+interface BannerAdDao {
+    @Query("SELECT * FROM banner_ads WHERE isActive = 1 ORDER BY displayOrder ASC, id DESC")
+    fun getActiveBanners(): Flow<List<com.example.data.model.BannerAd>>
+
+    @Query("SELECT * FROM banner_ads ORDER BY displayOrder ASC, id DESC")
+    fun getAllBannersAdmin(): Flow<List<com.example.data.model.BannerAd>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBanner(banner: com.example.data.model.BannerAd): Long
+
+    @Update
+    suspend fun updateBanner(banner: com.example.data.model.BannerAd)
+
+    @Delete
+    suspend fun deleteBanner(banner: com.example.data.model.BannerAd)
+
+    @Query("UPDATE banner_ads SET isActive = :isActive WHERE id = :bannerId")
+    suspend fun updateBannerStatus(bannerId: Long, isActive: Boolean)
+
+    @Query("UPDATE banner_ads SET viewsCount = viewsCount + 1 WHERE id = :bannerId")
+    suspend fun incrementBannerViews(bannerId: Long)
+}

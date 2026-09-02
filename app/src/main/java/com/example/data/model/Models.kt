@@ -137,6 +137,26 @@ data class UserProfile(
     val storeId: Long? = null
 )
 
+@Entity(tableName = "banner_ads")
+data class BannerAd(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val title: String,
+    val subtitle: String = "",
+    val badgeText: String = "إعلان مميز ✨",
+    val imageUrl: String = "",
+    val actionText: String = "تسوق الآن",
+    val targetType: String = "STORE", // "STORE", "CATEGORY", "SEARCH", "SPECIAL_OFFER", "EXTERNAL"
+    val targetPayload: String = "1", // storeId, categoryKey, search query, or url
+    val gradientStartHex: String = "#059669",
+    val gradientEndHex: String = "#047857",
+    val isActive: Boolean = true,
+    val isAnimated: Boolean = true,
+    val displayOrder: Int = 0,
+    val viewsCount: Int = 0,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
 // Combined UI data structures for Unified Search & Store/Product Browsing
 data class ProductWithStore(
     val product: Product,

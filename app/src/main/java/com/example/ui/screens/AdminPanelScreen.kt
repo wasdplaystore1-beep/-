@@ -20,9 +20,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.ShoppingBag
@@ -63,8 +66,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.model.BannerAd
 import com.example.data.model.Product
 import com.example.data.model.Store
+import com.example.ui.components.AddEditBannerAdDialog
+import com.example.ui.components.AnimatedBannerCard
 import com.example.ui.theme.EmeraldContainer
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldSecondary
@@ -84,10 +90,14 @@ fun AdminPanelScreen(
     val allStores by viewModel.allStoresAdmin.collectAsStateWithLifecycle()
     val allProducts by viewModel.allProductsAdmin.collectAsStateWithLifecycle()
     val categories by viewModel.platformCategories.collectAsStateWithLifecycle()
+    val allBanners by viewModel.allBannersAdmin.collectAsStateWithLifecycle()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var storeToDelete by remember { mutableStateOf<Store?>(null) }
     var productToDelete by remember { mutableStateOf<Product?>(null) }
+    var bannerToDelete by remember { mutableStateOf<BannerAd?>(null) }
+    var bannerToEdit by remember { mutableStateOf<BannerAd?>(null) }
+    var showAddBannerDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -204,17 +214,22 @@ fun AdminPanelScreen(
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("المتاجر (${allStores.size})", fontWeight = FontWeight.Bold) }
+                    text = { Text("المتاجر (${allStores.size})", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text("المنتجات (${allProducts.size})", fontWeight = FontWeight.Bold) }
+                    text = { Text("المنتجات (${allProducts.size})", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
                 )
                 Tab(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    text = { Text("الأرباح والاشتراكات", fontWeight = FontWeight.Bold) }
+                    text = { Text("الإعلانات (${allBanners.size})", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+                )
+                Tab(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
+                    text = { Text("الأرباح والاشتراك", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
                 )
             }
 
@@ -359,6 +374,167 @@ fun AdminPanelScreen(
                     }
                 }
                 2 -> {
+                    // Animated Banners & Ads Management Tab
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        item {
+                            Button(
+                                onClick = { showAddBannerDialog = true },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .testTag("admin_add_banner_btn"),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                            ) {
+                                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("إضافة إعلان متحرك جديد 📢", fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        if (allBanners.isEmpty()) {
+                            item {
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(32.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Campaign,
+                                            contentDescription = null,
+                                            tint = EmeraldPrimary,
+                                            modifier = Modifier.size(48.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text(
+                                            text = "لا توجد إعلانات متحركة حالياً",
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "أضف إعلانات لتظهر للمتسوقين في الصفحة الرئيسية مع حركة تفاعلية",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            items(allBanners) { banner ->
+                                Card(
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        // Visual Preview Card
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(140.dp)
+                                        ) {
+                                            AnimatedBannerCard(
+                                                banner = banner,
+                                                onClick = {}
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        // Info Row
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column {
+                                                Text(
+                                                    text = "الوجهة: ${
+                                                        when (banner.targetType) {
+                                                            "STORE" -> "متجر (#${banner.targetPayload})"
+                                                            "CATEGORY" -> "تصنيف (${banner.targetPayload})"
+                                                            "SEARCH" -> "بحث: ${banner.targetPayload}"
+                                                            "SPECIAL_OFFER" -> "عرض خاص"
+                                                            else -> "رابط خارجي"
+                                                        }
+                                                    }",
+                                                    fontSize = 12.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                                Text(
+                                                    text = "المشاهدات: ${banner.viewsCount} | الحركة: ${if (banner.isAnimated) "مفعلة ⚡" else "ثابت"}",
+                                                    fontSize = 11.sp,
+                                                    color = EmeraldPrimary,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
+
+                                            // Status Toggle Switch
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = if (banner.isActive) "نشط" else "معطل",
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (banner.isActive) EmeraldPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Switch(
+                                                    checked = banner.isActive,
+                                                    onCheckedChange = { viewModel.toggleBannerStatus(banner) },
+                                                    colors = SwitchDefaults.colors(checkedThumbColor = EmeraldPrimary)
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        // Actions Row
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.End,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            TextButton(onClick = { bannerToEdit = banner }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Edit,
+                                                    contentDescription = "تعديل",
+                                                    tint = EmeraldPrimary,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("تعديل", color = EmeraldPrimary, fontSize = 12.sp)
+                                            }
+
+                                            Spacer(modifier = Modifier.width(8.dp))
+
+                                            TextButton(onClick = { bannerToDelete = banner }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Delete,
+                                                    contentDescription = "حذف",
+                                                    tint = MaterialTheme.colorScheme.error,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("حذف", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                3 -> {
                     // Monetization & Subscription Plans Hub
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
@@ -464,6 +640,85 @@ fun AdminPanelScreen(
                 TextButton(onClick = { productToDelete = null }) {
                     Text("إلغاء")
                 }
+            }
+        )
+    }
+
+    // Delete Banner Confirmation
+    if (bannerToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { bannerToDelete = null },
+            title = { Text("تأكيد حذف الإعلان المتحرك") },
+            text = { Text("هل أنت متأكد من حذف هذا الإعلان \"${bannerToDelete?.title}\" نهائياً؟") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        bannerToDelete?.let { viewModel.deleteBannerAd(it) }
+                        bannerToDelete = null
+                        Toast.makeText(context, "تم حذف الإعلان بنجاح", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("حذف الإعلان")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { bannerToDelete = null }) {
+                    Text("إلغاء")
+                }
+            }
+        )
+    }
+
+    // Add Banner Ad Dialog
+    if (showAddBannerDialog) {
+        AddEditBannerAdDialog(
+            availableStores = allStores,
+            availableCategories = categories,
+            onDismiss = { showAddBannerDialog = false },
+            onSave = { title, subtitle, badgeText, imageUrl, actionText, targetType, targetPayload, gradStart, gradEnd, isAnim ->
+                viewModel.createBannerAd(
+                    title = title,
+                    subtitle = subtitle,
+                    badgeText = badgeText,
+                    imageUrl = imageUrl,
+                    actionText = actionText,
+                    targetType = targetType,
+                    targetPayload = targetPayload,
+                    gradientStartHex = gradStart,
+                    gradientEndHex = gradEnd,
+                    isAnimated = isAnim
+                )
+                showAddBannerDialog = false
+            }
+        )
+    }
+
+    // Edit Banner Ad Dialog
+    if (bannerToEdit != null) {
+        AddEditBannerAdDialog(
+            existingBanner = bannerToEdit,
+            availableStores = allStores,
+            availableCategories = categories,
+            onDismiss = { bannerToEdit = null },
+            onSave = { title, subtitle, badgeText, imageUrl, actionText, targetType, targetPayload, gradStart, gradEnd, isAnim ->
+                bannerToEdit?.let { existing ->
+                    viewModel.updateBannerAd(
+                        existing.copy(
+                            title = title,
+                            subtitle = subtitle,
+                            badgeText = badgeText,
+                            imageUrl = imageUrl,
+                            actionText = actionText,
+                            targetType = targetType,
+                            targetPayload = targetPayload,
+                            gradientStartHex = gradStart,
+                            gradientEndHex = gradEnd,
+                            isAnimated = isAnim
+                        )
+                    )
+                }
+                bannerToEdit = null
             }
         )
     }

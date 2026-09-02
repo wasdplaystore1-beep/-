@@ -39,6 +39,7 @@ class SouqnaRepository(private val database: AppDatabase) {
     private val platformCategoryDao = database.platformCategoryDao()
     private val storeReviewDao = database.storeReviewDao()
     private val userProfileDao = database.userProfileDao()
+    private val bannerAdDao = database.bannerAdDao()
 
     // 1. Stores
     val allActiveStores: Flow<List<Store>> = storeDao.getAllActiveStores()
@@ -241,4 +242,19 @@ class SouqnaRepository(private val database: AppDatabase) {
     // 7. Platform Admin Counts
     val totalStoresCount: Flow<Int> = storeDao.getStoresCount()
     val totalProductsCount: Flow<Int> = productDao.getProductsCount()
+
+    // 8. Animated Banner Ads
+    val activeBanners: Flow<List<com.example.data.model.BannerAd>> = bannerAdDao.getActiveBanners()
+    val allBannersAdmin: Flow<List<com.example.data.model.BannerAd>> = bannerAdDao.getAllBannersAdmin()
+
+    suspend fun insertBanner(banner: com.example.data.model.BannerAd): Long = bannerAdDao.insertBanner(banner)
+
+    suspend fun updateBanner(banner: com.example.data.model.BannerAd) = bannerAdDao.updateBanner(banner)
+
+    suspend fun deleteBanner(banner: com.example.data.model.BannerAd) = bannerAdDao.deleteBanner(banner)
+
+    suspend fun toggleBannerStatus(bannerId: Long, isActive: Boolean) =
+        bannerAdDao.updateBannerStatus(bannerId, isActive)
+
+    suspend fun incrementBannerViews(bannerId: Long) = bannerAdDao.incrementBannerViews(bannerId)
 }

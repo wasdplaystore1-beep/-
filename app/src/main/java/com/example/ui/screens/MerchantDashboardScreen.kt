@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveRedEye
@@ -69,6 +70,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.data.model.Product
 import com.example.data.model.StoreCategory
+import com.example.ui.components.AddEditBannerAdDialog
 import com.example.ui.components.ShareLinkDialog
 import com.example.ui.theme.EmeraldContainer
 import com.example.ui.theme.EmeraldPrimary
@@ -87,8 +89,10 @@ fun MerchantDashboardScreen(
     val context = LocalContext.current
 
     val merchantStoreWithProducts by viewModel.myMerchantStore.collectAsStateWithLifecycle()
+    val platformCategories by viewModel.platformCategories.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
     var showAddCategoryDialog by remember { mutableStateOf(false) }
+    var showCreateAdDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var showShareDialog by remember { mutableStateOf(false) }
     var productToDelete by remember { mutableStateOf<Product?>(null) }
@@ -300,6 +304,23 @@ fun MerchantDashboardScreen(
                         Icon(Icons.Default.RemoveRedEye, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("معاينة صفحة المتجر كما يراها الزبائن")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Promote Store via Animated Banner Ad
+                    Button(
+                        onClick = { showCreateAdDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GoldSecondary,
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Icon(Icons.Default.Campaign, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("📢 نشر إعلان متحرك للمتجر في الصفحة الرئيسية", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -650,6 +671,31 @@ fun MerchantDashboardScreen(
             urlPath = "/store/${store.slug}",
             shareText = "تفضل بزيارة متجرنا \"${store.name}\" على منصة سوقنا واطلب منتجاتنا عبر واتساب مباشرة:",
             onDismiss = { showShareDialog = false }
+        )
+    }
+
+    // Promote Store Dialog
+    if (showCreateAdDialog) {
+        AddEditBannerAdDialog(
+            existingBanner = null,
+            availableStores = listOf(store),
+            availableCategories = platformCategories,
+            onDismiss = { showCreateAdDialog = false },
+            onSave = { title, subtitle, badgeText, imageUrl, actionText, targetType, targetPayload, gradStart, gradEnd, isAnim ->
+                viewModel.createBannerAd(
+                    title = title,
+                    subtitle = subtitle,
+                    badgeText = badgeText,
+                    imageUrl = imageUrl.ifBlank { store.bannerUrl.ifBlank { store.logoUrl } },
+                    actionText = actionText,
+                    targetType = "STORE",
+                    targetPayload = store.id.toString(),
+                    gradientStartHex = gradStart,
+                    gradientEndHex = gradEnd,
+                    isAnimated = isAnim
+                )
+                showCreateAdDialog = false
+            }
         )
     }
 }

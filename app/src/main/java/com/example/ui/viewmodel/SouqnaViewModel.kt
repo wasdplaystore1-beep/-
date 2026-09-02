@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
+import com.example.data.model.BannerAd
 import com.example.data.model.PlatformCategory
 import com.example.data.model.Product
 import com.example.data.model.ProductWithStore
@@ -194,6 +195,12 @@ class SouqnaViewModel(application: Application) : AndroidViewModel(application) 
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allProductsWithStore: StateFlow<List<ProductWithStore>> = repository.getProductsWithStore()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val activeBanners: StateFlow<List<BannerAd>> = repository.activeBanners
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allBannersAdmin: StateFlow<List<BannerAd>> = repository.allBannersAdmin
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val currentUser: StateFlow<UserProfile?> = repository.currentUser
@@ -472,6 +479,108 @@ class SouqnaViewModel(application: Application) : AndroidViewModel(application) 
     fun adminDeleteProduct(product: Product) {
         viewModelScope.launch {
             repository.deleteProduct(product)
+        }
+    }
+
+    // Banner Ads Management
+    fun createBannerAd(
+        title: String,
+        subtitle: String,
+        badgeText: String,
+        imageUrl: String,
+        actionText: String,
+        targetType: String,
+        targetPayload: String,
+        gradientStartHex: String = "#059669",
+        gradientEndHex: String = "#047857",
+        isAnimated: Boolean = true
+    ) {
+        viewModelScope.launch {
+            repository.insertBanner(
+                BannerAd(
+                    title = title.trim(),
+                    subtitle = subtitle.trim(),
+                    badgeText = badgeText.trim().ifBlank { "إعلان مميز ✨" },
+                    imageUrl = imageUrl.trim(),
+                    actionText = actionText.trim().ifBlank { "تسوق الآن" },
+                    targetType = targetType,
+                    targetPayload = targetPayload.trim(),
+                    gradientStartHex = gradientStartHex,
+                    gradientEndHex = gradientEndHex,
+                    isActive = true,
+                    isAnimated = isAnimated,
+                    displayOrder = 0
+                )
+            )
+        }
+    }
+
+    fun updateBannerAd(banner: BannerAd) {
+        viewModelScope.launch {
+            repository.updateBanner(banner)
+        }
+    }
+
+    fun deleteBannerAd(banner: BannerAd) {
+        viewModelScope.launch {
+            repository.deleteBanner(banner)
+        }
+    }
+
+    fun toggleBannerStatus(bannerId: Long, isActive: Boolean) {
+        viewModelScope.launch {
+            repository.toggleBannerStatus(bannerId, isActive)
+        }
+    }
+
+    fun toggleBannerStatus(banner: BannerAd) {
+        toggleBannerStatus(banner.id, !banner.isActive)
+    }
+
+    fun handleBannerClick(banner: BannerAd) {
+        viewModelScope.launch {
+            repository.incrementBannerViews(banner.id)
+        }
+        when (banner.targetType) {
+            "STORE" -> {
+                val storeId = banner.targetPayload.toLongOrNull()
+                if (storeId != null) {
+                    selectStore(storeId)
+                } else {
+                    navigateTo(ScreenNav.Search)
+                }
+            }
+            "CATEGORY" -> {
+                val catKey = banner.targetPayload.ifBlank { "watches_accessories" }
+                val cat = platformCategories.value.find { it.key == catKey }
+                if (cat != null) {
+                    selectCategory(cat)
+                } else {
+                    navigateTo(ScreenNav.Search)
+                }
+            }
+            "SEARCH" -> {
+                updateSearchQuery(banner.targetPayload)
+                setSearchTab(SearchTab.ALL)
+                navigateTo(ScreenNav.Search)
+            }
+            "SPECIAL_OFFER" -> {
+                if (banner.targetPayload == "create_store") {
+                    navigateTo(ScreenNav.CreateStore)
+                } else {
+                    navigateTo(ScreenNav.Monetization)
+                }
+            }
+            "EXTERNAL" -> {
+                if (banner.targetPayload.startsWith("http")) {
+                    navigateToWebUrl(banner.targetPayload)
+                } else {
+                    navigateTo(ScreenNav.Search)
+                }
+            }
+            else -> {
+                navigateTo(ScreenNav.Search)
+            }
         }
     }
 }
